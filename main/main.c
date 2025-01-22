@@ -8,9 +8,8 @@
 
 /****************************************************************************
 *
-* This file is for bt_spp_vfs_acceptor demo. It can create servers, wait for connected and receive data.
-* run bt_spp_vfs_acceptor demo, the bt_spp_vfs_initiator demo will automatically connect the bt_spp_vfs_acceptor demo,
-* then receive data.
+* This file is for esp_bt_uart_bridge demo. It can create servers, wait for
+* connection and transfer data between Bluetooth SPP devices.
 *
 ****************************************************************************/
 
@@ -30,7 +29,6 @@
 #include "esp_gap_bt_api.h"
 #include "esp_bt_device.h"
 #include "esp_spp_api.h"
-//#include "rom/gpio.h"
 #include "spp_task.h"
 
 #include "main.h"
@@ -109,76 +107,80 @@ static char *bda2str(uint8_t * bda, char *str, size_t size)
 
 static int uart_to_bt(int bt_fd, TickType_t ticks_to_wait)
 {
-    int size;
+	int size;
 
-    size = uart_read_bytes(BT_UART, spp_buff,
+	size = uart_read_bytes(BT_UART, spp_buff,
 			SPP_DATA_LEN, ticks_to_wait);
-    if (size <= 0) {
-        return 0;
-    }
+	if (size <= 0) {
+		return 0;
+	}
 
-    ESP_LOGD(SPP_TAG, "UART -> %d bytes", size);
+	ESP_LOGD(SPP_TAG, "UART -> %d bytes", size);
 
-    uint8_t* ptr = spp_buff;
-    int remain = size;
-    while (remain > 0)
-    {
-        int res = write(bt_fd, ptr, remain);
-        if (res < 0) {
-            return res;
-        }
-        if (res == 0) {
-            vTaskDelay(1);
-            continue;
-        }
+	uint8_t* ptr = spp_buff;
+	int remain = size;
+	while (remain > 0) {
+		int res = write(bt_fd, ptr, remain);
+		if (res < 0) {
+			return res;
+		}
+		if (res == 0) {
+			vTaskDelay(1);
+			continue;
+		}
 
-        ESP_LOGD(SPP_TAG, "BT <- %d bytes", res);
-        remain -= res;
-        ptr  += res;
-    }
+		ESP_LOGD(SPP_TAG, "BT <- %d bytes", res);
+		remain -= res;
+		ptr  += res;
+	}
 
-    return size;
+	return size;
 }
 
 static void spp_read_handle(void * param)
 {
-    int fd = (int)param;
-    TickType_t ticks_to_wait = 1;
+	int fd = (int)param;
+	TickType_t ticks_to_wait = 1;
 
-    ESP_LOGI(SPP_TAG, "BT connected, %u bytes free", heap_caps_get_free_size(MALLOC_CAP_DEFAULT));
-    gpio_set_level(BT_CONNECTED_GPIO, BT_LED_CONNECTED);
-    uart_flush(BT_UART);
+	ESP_LOGI(SPP_TAG, "BT connected, %u bytes free", heap_caps_get_free_size(MALLOC_CAP_DEFAULT));
+	gpio_set_level(BT_CONNECTED_GPIO, BT_LED_CONNECTED);
+	uart_flush(BT_UART);
 
-    for (;;)
-    {
-        // Send available data from UART to BT first
-        for (;;) {
-            int tx_size = uart_to_bt(fd, ticks_to_wait);
-            if (tx_size < 0)
-                goto done;
-            if (!tx_size)
-                break;
-            ticks_to_wait = 0;
-        }
+	for (;;)
+	{
+		// Send available data from UART to BT first
+		for (;;) {
+			int tx_size = uart_to_bt(fd, ticks_to_wait);
+			if (tx_size < 0) {
+				goto done;
+			}
 
-        // Try receive data from BT
-        int const size = read(fd, spp_buff, SPP_DATA_LEN);
-        if (size < 0) {
-            goto done;
-        }
-        if (size > 0) {
-            ESP_LOGD(SPP_TAG, "BT -> %d bytes -> UART", size);
-            uart_write_bytes(BT_UART, (const char *)spp_buff, size);
-            ticks_to_wait = 0;
-        } else
-            ticks_to_wait = 1;
-    }
+			if (!tx_size) {
+				break;
+			}
+			ticks_to_wait = 0;
+		}
+
+		// Try receive data from BT
+		int const size = read(fd, spp_buff, SPP_DATA_LEN);
+		if (size < 0) {
+			goto done;
+		}
+
+		if (size > 0) {
+			ESP_LOGD(SPP_TAG, "BT -> %d bytes -> UART", size);
+			uart_write_bytes(BT_UART, (const char *)spp_buff, size);
+			ticks_to_wait = 0;
+		} else {
+			ticks_to_wait = 1;
+		}
+	}
 
 done:
-    ESP_LOGI(SPP_TAG, "BT disconnected");
-    gpio_set_level(BT_CONNECTED_GPIO, BT_LED_DISCONNECT);
+	ESP_LOGI(SPP_TAG, "BT disconnected");
+	gpio_set_level(BT_CONNECTED_GPIO, BT_LED_DISCONNECT);
 
-    spp_wr_task_shut_down();
+	spp_wr_task_shut_down();
 }
 
 static inline char hex_digit(uint8_t v)

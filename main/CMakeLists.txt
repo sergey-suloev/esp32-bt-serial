@@ -1,5 +1,3 @@
-set(COMPONENT_SRCS "spp_vfs_acceptor.c"
-                   "spp_task.c")
-set(COMPONENT_ADD_INCLUDEDIRS ".")
-
-register_component()
+idf_component_register(SRCS "main.c"
+                            "spp_task.c"
+                    INCLUDE_DIRS ".")
