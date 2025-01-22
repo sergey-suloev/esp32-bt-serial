@@ -15,7 +15,7 @@
 #include <stdint.h>
 #include <string.h>
 #include <stdbool.h>
-#include "freertos/xtensa_api.h"
+#include "xtensa_api.h"
 #include "freertos/FreeRTOSConfig.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/queue.h"
@@ -27,8 +27,8 @@ static void spp_task_task_handler(void *arg);
 static bool spp_task_send_msg(spp_task_msg_t *msg);
 static void spp_task_work_dispatched(spp_task_msg_t *msg);
 
-static xQueueHandle spp_task_task_queue = NULL;
-static xTaskHandle spp_task_task_handle = NULL;
+static QueueHandle_t spp_task_task_queue = NULL;
+static TaskHandle_t spp_task_task_handle = NULL;
 
 bool spp_task_work_dispatch(spp_task_cb_t p_cback, uint16_t event, void *p_params, int param_len, spp_task_copy_cb_t p_copy_cback)
 {
@@ -63,7 +63,7 @@ static bool spp_task_send_msg(spp_task_msg_t *msg)
         return false;
     }
 
-    if (xQueueSend(spp_task_task_queue, msg, 10 / portTICK_RATE_MS) != pdTRUE) {
+    if (xQueueSend(spp_task_task_queue, msg, 10 / portTICK_PERIOD_MS) != pdTRUE) {
         ESP_LOGE(SPP_TASK_TAG, "%s xQueue send failed", __func__);
         return false;
     }
@@ -81,7 +81,7 @@ static void spp_task_task_handler(void *arg)
 {
     spp_task_msg_t msg;
     for (;;) {
-        if (pdTRUE == xQueueReceive(spp_task_task_queue, &msg, (portTickType)portMAX_DELAY)) {
+        if (pdTRUE == xQueueReceive(spp_task_task_queue, &msg, (TickType_t )portMAX_DELAY)) {
             ESP_LOGD(SPP_TASK_TAG, "%s, sig 0x%x, 0x%x", __func__, msg.sig, msg.event);
             switch (msg.sig) {
             case SPP_TASK_SIG_WORK_DISPATCH:
@@ -102,7 +102,7 @@ static void spp_task_task_handler(void *arg)
 void spp_task_task_start_up(void)
 {
     spp_task_task_queue = xQueueCreate(10, sizeof(spp_task_msg_t));
-    xTaskCreate(spp_task_task_handler, "SPPAppT", 2048, NULL, 10, spp_task_task_handle);
+    xTaskCreate(spp_task_task_handler, "SPPAppT", 2048, NULL, 10, &spp_task_task_handle);
     return;
 }
 

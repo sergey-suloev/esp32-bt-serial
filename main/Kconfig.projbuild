@@ -1,135 +1,135 @@
 menu "BT-UART Bridge Configuration"
 
-config CONNECTED_LED_GPIO
-    int "Connected indicator GPIO number"
+config BTUB_CONNECT_IND_GPIO
+	int "Connected indicator GPIO number"
 	range 0 34
 	default 5
 	help
-		GPIO number (IOxx) for connected status indication.
+	  GPIO number (IOxx) for connected status indication.
 
-config UART_TX_GPIO
-    int "UART TX GPIO number"
+config BTUB_UART_TX_GPIO
+	int "UART TX GPIO number"
 	range 0 34
 	default 25
 	help
-		GPIO number (IOxx) for serial data TX output.
+	  GPIO number (IOxx) for serial data TX output.
 
-config UART_RX_GPIO
-    int "UART RX GPIO number"
+config BTUB_UART_RX_GPIO
+	int "UART RX GPIO number"
 	range 0 34
 	default 26
 	help
-		GPIO number (IOxx) for serial data RX input.
+	  GPIO number (IOxx) for serial data RX input.
 
-config UART_RTS_GPIO
-    int "UART RTS GPIO number"
+config BTUB_UART_RTS_GPIO
+	int "UART RTS GPIO number"
 	range 0 34
 	default 27
 	help
-		GPIO number (IOxx) for serial data RTS output. Low level enables data reception from RX line.
+	  GPIO number (IOxx) for serial data RTS output. Low level enables data reception from RX line.
 
-config UART_CTS_GPIO
-    depends on UART_CTS_EN
-    int "UART CTS GPIO number"
+config BTUB_UART_CTS_GPIO
+	depends on UART_CTS_EN
+	int "UART CTS GPIO number"
 	range 0 34
 	default 14
 	help
-		GPIO number (IOxx) for serial data CTS input. Low level enables data transmission to TX line.
+	  GPIO number (IOxx) for serial data CTS input. Low level enables data transmission to TX line.
 
-config UART_CTS_EN
-    bool "UART CTS enable"
+config BTUB_UART_CTS_ENABLE
+	bool "UART CTS enable"
 	default n
 	help
-		Enable using CTS input. Low level on this pin enables data transmission to TX line.
+	  Enable using CTS input. Low level on this pin enables data transmission to TX line.
 
-config UART_BITRATE
-    int "UART baud rate"
-	range 9600 1843200
-	default 921600
-	help
-		UART data transfer rate in bits per second.
-
-config UART_BITRATE_ALT
-    int "UART alternative baud rate"
+config BTUB_UART_BITRATE
+	int "UART baud rate"
 	range 9600 1843200
 	default 115200
 	help
-		UART alternative mode data transfer rate in bits per second.
+	  UART data transfer rate in bits per second.
 
-config UART_TX_BUFF_SIZE
-    int "UART transmit buffer size (KB)"
+config BTUB_UART_BITRATE_ALT
+	int "UART alternative baud rate"
+	range 9600 1843200
+	default 9600
+	help
+	  UART alternative mode data transfer rate in bits per second.
+
+config BTUB_UART_TX_BUFF_SIZE
+	int "UART transmit buffer size (KB)"
 	range 0 64
 	default 17
 	help
-		UART transmit data buffer size in kilobytes.
+	  UART transmit data buffer size in kilobytes.
 
-config UART_RX_BUFF_SIZE
-    int "UART receive buffer size (KB)"
+config BTUB_UART_RX_BUFF_SIZE
+	int "UART receive buffer size (KB)"
 	range 1 64
 	default 17
 	help
-		UART receive data buffer size in kilobytes.
+	  UART receive data buffer size in kilobytes.
 
-config DEV_NAME_PREFIX
-    string "Bluetooth device name prefix"
-	default "EnSpectr-"
+config BTUB_DEVICE_NAME
+	string "Bluetooth device name"
+	default "ESP-BT-UART-BRIDGE"
 	help
-		The fixed part of the bluetooth device name. It will be followed by serial number based on the MAC address.
+	  The fixed part of the bluetooth device name. It will be followed by serial number based on the MAC address.
 
-config DEV_NAME_PREFIX_ALT
-    string "Bluetooth alternative device name prefix"
-	default "EnSpectrPw-"
+config BTUB_DEVICE_NAME_ALT
+	string "Bluetooth alternative device name"
+	default "ESP-BT-UART-BRIDGE-ALT"
 	help
-		The fixed part of the alternative bluetooth device name. It will be followed by serial number based on the MAC address.
+	  The fixed part of the alternative bluetooth device name. It will be followed by serial number based on the MAC address.
 
-config ALT_SWITCH_GPIO
-    int "UART alternative mode switch GPIO number"
+config BTUB_ALT_MODE_SWITCH_GPIO
+	int "UART alternative mode switch GPIO number"
 	range 0 34
 	default 4
 	help
-		GPIO number (IOxx) for alternative mode switch. Pulled low it will engage alternative settings for device name and baud rate.
+	  GPIO number (IOxx) for alternative mode switch. Pulled low it will engage alternative settings for device name and baud rate.
 
-config ALT_INDICATOR_GPIO
-    int "UART alternative mode indicator GPIO number"
+config BTUB_ALT_MODE_IND_GPIO
+	int "UART alternative mode indicator GPIO number"
 	range 0 34
 	default 32
 	help
-		GPIO number (IOxx) for alternative mode indicator. Its pulled high while in alternative mode or kept in high impedance state otherwise.
+	  GPIO number (IOxx) for alternative mode indicator. Its pulled high while in alternative mode or kept in high impedance state otherwise.
 
-config ALT_UART_PARITY
-    bool "UART use parity in alternative mode"
+config BTUB_ALT_UART_PARITY
+	bool "UART use parity in alternative mode"
 	default y
 	help
-		Enable UART parity in alternative mode. If enabled the UART port uses even parity in alternative mode.
+	  Enable UART parity in alternative mode. If enabled the UART port uses even parity in alternative mode.
 
-config DEV_NAME_BLE
-    depends on BTDM_CONTROLLER_MODE_BTDM
-    string "Bluetooth LE device name"
+config BTUB_BLE_DEVICE_NAME
+	depends on BTDM_CONTROLLER_MODE_BTDM
+	string "Bluetooth LE device name"
 	default "EsPw"
 	help
-		The name of the bluetooth LE device. It will be followed by serial number based on the MAC address. Its shown by web BLE applications only.
+	  The name of the bluetooth LE device. It will be followed by serial number based on the MAC address. Its shown by web BLE applications only.
 
-config BLE_UART_RX_GPIO
-    depends on BTDM_CONTROLLER_MODE_BTDM
-    int "BLE UART RX GPIO number"
+config BTUD_BLE_UART_RX_GPIO
+	depends on BTDM_CONTROLLER_MODE_BTDM
+	int "BLE UART RX GPIO number"
 	range 0 34
 	default 33
 	help
-		GPIO number (IOxx) for BLE UART RX input.
+	  GPIO number (IOxx) for BLE UART RX input.
 
-config BLE_UART_BITRATE
-    depends on BTDM_CONTROLLER_MODE_BTDM
-    int "BLE UART baud rate"
+config BTUB_BLE_UART_BITRATE
+	depends on BTDM_CONTROLLER_MODE_BTDM
+	int "BLE UART baud rate"
 	range 9600 1843200
 	default 19200
 	help
-		BLE UART data transfer rate in bits per second.
+	  BLE UART data transfer rate in bits per second.
 
-config BLE_UART_PARITY
-    depends on BTDM_CONTROLLER_MODE_BTDM
-    bool "BLE adapter use parity"
+config BTUB_BLE_UART_PARITY
+	depends on BTDM_CONTROLLER_MODE_BTDM
+	bool "BLE adapter use parity"
 	default y
 	help
-		Enable BLE adapter parity. If enabled the BLE UART port expects even parity.
+	  Enable BLE adapter parity. If enabled the BLE UART port expects even parity.
 
 endmenu
